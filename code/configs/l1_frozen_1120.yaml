@@ -1,0 +1,14 @@
+# L1 - frozen 1120 inference (training-free) [BEST]
+name: l1_frozen_1120
+mode: inference
+training_free: true          # no parameter update
+checkpoint: 704 EMA checkpoint (shared)
+inference:
+  resolution: 1120           # square, direct resize; PE interpolated
+  num_select: 300
+  max_dets: 100
+  resize: square direct resize (bilinear); positional embeddings interpolated for larger grids
+  coordinate_restoration: predictions rescaled from network input size back to original image size
+  box_clipping: boxes clipped to image bounds
+  compile: false
+  confidence_threshold: 0.01   # code default (benchmark.schema.json); low threshold for COCO-AP evaluation

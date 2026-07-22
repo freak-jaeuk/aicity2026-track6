@@ -1,0 +1,19 @@
+# L2 - rectangular inference (negative result)
+name: l2_rect_1280x736
+mode: inference
+checkpoint: 704 EMA checkpoint (shared)
+inference:
+  resolution: 1280x736       # parsed by the CLI in HxW order -> height 1280, width 736
+  resolution_order: HxW      # square resolutions are a single integer; rectangular ones are HxW
+  actual_input_shape: 1280(H) x 736(W)
+  num_select: 300
+  max_dets: 100
+  resize: rectangular direct resize to 1280(H) x 736(W) (bilinear); PE interpolated
+  note: >
+    Orientation, aspect ratio, image shape, and total pixel count all differ from
+    the square 1120x1120 setting, so this is a rectangular-input test and must not
+    be read as aspect-ratio-preserving or native-aspect inference.
+  coordinate_restoration: predictions rescaled from network input size back to original image size
+  box_clipping: boxes clipped to image bounds
+  compile: false
+  confidence_threshold: 0.01   # code default (benchmark.schema.json); low threshold for COCO-AP evaluation

@@ -1,0 +1,14 @@
+# L0 - base 704 inference (reference)
+name: l0_base_704
+mode: inference
+checkpoint: 704 EMA checkpoint (shared)
+inference:
+  resolution: 704
+  num_select: 300
+  max_dets: 100
+  resize: square direct resize to 704x704 (bilinear)
+  positional_embedding: training grid; no larger-grid interpolation
+  coordinate_restoration: predictions rescaled from network input size back to original image size
+  box_clipping: boxes clipped to image bounds
+  compile: false
+  confidence_threshold: 0.01   # code default (benchmark.schema.json); low threshold for COCO-AP evaluation

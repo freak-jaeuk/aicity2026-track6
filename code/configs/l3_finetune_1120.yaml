@@ -1,0 +1,27 @@
+# L3 - 1120px warm-start fine-tuning
+name: l3_finetune_1120
+mode: train
+warm_start_checkpoint: 704 EMA checkpoint (shared; checkpoint_best_total of base run)
+train:
+  resolution: 1120
+  epochs: 6
+  optimizer: AdamW (re-initialized)
+  decoder_lr: 1.5e-5
+  encoder_lr: 1.0e-4
+  scheduler: cosine (re-initialized)
+  warmup_epochs: not separately logged   # exact value for the reported L3 run was not retained
+  warmup_note: >
+    The exact warmup for the reported L3 run was not retained. The current
+    train.py CLI default (1.0) is provided only for executable examples and
+    should not be read as the exact historical value.
+  lr_min_factor: 0.05
+  weight_decay: 1.0e-4
+  ema_decay: 0.993
+  seed: null
+  batch_size: 1
+  grad_accumulation_steps: 16
+  effective_batch: 16
+  precision: amp
+  augmentation: dg_crosscity_v2
+  evaluated_checkpoint: higher-scoring of EMA / regular by source-validation AP (checkpoint_best_total)
+  eval_resolution: 1120

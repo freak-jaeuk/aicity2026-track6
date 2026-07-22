@@ -1,0 +1,26 @@
+# Base training configuration (produces the 704 EMA checkpoint)
+name: base_704
+mode: train
+model: RF-DETR-Large (rfdetr 1.8.1)
+backbone: DINOv2 ViT-S, windowed
+train:
+  resolution: 704
+  epochs: 80
+  optimizer: AdamW
+  decoder_lr: 7.0e-5
+  encoder_lr: 1.0e-4
+  scheduler: cosine
+  warmup_epochs: 1.0
+  lr_min_factor: 0.05
+  weight_decay: 1.0e-4
+  ema_decay: 0.993
+  ema_tau: 100
+  seed: null            # no fixed seed
+  batch_size: 1
+  grad_accumulation_steps: 16
+  effective_batch: 16
+  precision: amp
+  augmentation: dg_crosscity_v2
+  augmentation_backend: cpu
+  num_select: 300
+  checkpoint_selection: best source-validation AP (higher of EMA / regular -> checkpoint_best_total)

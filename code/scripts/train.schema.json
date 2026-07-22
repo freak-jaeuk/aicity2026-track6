@@ -1,0 +1,260 @@
+{
+  "name": "scripts/train.py",
+  "cmd": "python scripts/train.py",
+  "json_schema": {
+    "$defs": {
+      "InferenceConfig": {
+        "properties": {
+          "compile": {
+            "default": true,
+            "title": "Compile",
+            "type": "boolean"
+          },
+          "batch_size": {
+            "default": 1,
+            "title": "Batch Size",
+            "type": "integer"
+          },
+          "threshold": {
+            "default": 0.01,
+            "title": "Threshold",
+            "type": "number"
+          },
+          "hflip": {
+            "default": false,
+            "title": "Hflip",
+            "type": "boolean"
+          },
+          "num_select": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "title": "Select 'Integer'"
+              },
+              {
+                "type": "null",
+                "title": "Select None"
+              }
+            ],
+            "default": null,
+            "title": "Num Select"
+          },
+          "resolution": {
+            "anyOf": [
+              {
+                "type": "string",
+                "title": "Select 'String'"
+              },
+              {
+                "type": "null",
+                "title": "Select None"
+              }
+            ],
+            "default": null,
+            "title": "Resolution"
+          },
+          "grayworld": {
+            "default": false,
+            "title": "Grayworld",
+            "type": "boolean"
+          }
+        },
+        "title": "InferenceConfig",
+        "type": "object"
+      }
+    },
+    "description": "Train an RF-DETR object detection model on a Hafnia dataset.\n\nLoads the selected managed Hafnia training dataset when running on the platform; when\nexecuted locally, the small public sample dataset is used. (The evaluation benchmark is a\nseparate held-out dataset and is never loaded here.) Initializes an RF-DETR model from\nthe compressed model archive pointed to by ``model_path`` (optionally with pretrained weights), converts the\ntrain/val splits to COCO format and runs RF-DETR training.\n\nAfter training, every ``checkpoint_*.pth`` produced by RF-DETR is repackaged as a\nstandalone compressed Hafnia model archive (weights + serialized model config bundled into a\nsingle ``.zip``) under the experiment model and checkpoints folders. The checkpoint selected\nby ``inference_model_name`` is then\nloaded as a ``WrappedModel``, optimized for inference (e.g. ``torch.compile`` when enabled\nvia ``inference_config``) and run on the held-out test split. Predictions are written to\nthe experiment artifacts folder. When the test split has ground-truth annotations, detection\nmetrics are computed via ``metric_calculations`` and logged through ``HafniaLogger``; if no\nground truth is present the metric step is skipped with a warning.",
+    "properties": {
+      "project_name": {
+        "default": "Trainer RF-DETR",
+        "description": "Project name for the experiment",
+        "title": "Project Name",
+        "type": "string"
+      },
+      "model_path": {
+        "default": "./pretrained_models/RFDETRNano.zip",
+        "description": "Path to a compressed (zip) pretrained model used as the training starting point. Options: ['pretrained_models/RFDETRNano.zip', 'pretrained_models/RFDETRMedium.zip', 'pretrained_models/RFDETRLarge.zip', 'pretrained_models/RFDETRSegNano.zip']. Note: this is ignored when a checkpoint is available (e.g. a checkpoint selected for the experiment on the Hafnia platform) - training resumes from the checkpoint instead (and '--pretrained' is forced to True).",
+        "title": "Model Path",
+        "type": "string"
+      },
+      "pretrained": {
+        "default": true,
+        "description": "Initialize the model from pretrained weights",
+        "title": "Pretrained",
+        "type": "boolean"
+      },
+      "epochs": {
+        "default": 10,
+        "description": "Number of epochs to train",
+        "title": "Epochs",
+        "type": "integer"
+      },
+      "batch_size": {
+        "default": 8,
+        "description": "Batch size for training",
+        "title": "Batch Size",
+        "type": "integer"
+      },
+      "grad_accumulation_steps": {
+        "default": 1,
+        "description": "Number of gradient accumulation steps (effective batch size = batch_size * grad_accumulation_steps)",
+        "title": "Grad Accumulation Steps",
+        "type": "integer"
+      },
+      "learning_rate": {
+        "default": 0.001,
+        "description": "Learning rate for the optimizer",
+        "title": "Learning Rate",
+        "type": "number"
+      },
+      "warmup_epochs": {
+        "default": 1.0,
+        "description": "Cosine-schedule warmup length in epochs",
+        "title": "Warmup Epochs",
+        "type": "number"
+      },
+      "lr_encoder": {
+        "default": 0.0001,
+        "description": "Encoder (backbone) learning rate",
+        "title": "Lr Encoder",
+        "type": "number"
+      },
+      "lr_min_factor": {
+        "default": 0.05,
+        "description": "Cosine minimum-LR factor",
+        "title": "Lr Min Factor",
+        "type": "number"
+      },
+      "resolution": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "title": "Select 'Integer'"
+          },
+          {
+            "type": "null",
+            "title": "Select None"
+          }
+        ],
+        "default": null,
+        "description": "Input resolution (square side in pixels). Defaults to each model's built-in value.",
+        "title": "Resolution"
+      },
+      "task_name": {
+        "anyOf": [
+          {
+            "type": "string",
+            "title": "Select 'String'"
+          },
+          {
+            "type": "null",
+            "title": "Select None"
+          }
+        ],
+        "default": null,
+        "description": "Dataset task name used for training. Only required when the dataset has multiple tasks matching the model primitive.",
+        "title": "Task Name"
+      },
+      "samples": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "title": "Select 'Integer'"
+          },
+          {
+            "type": "null",
+            "title": "Select None"
+          }
+        ],
+        "default": null,
+        "description": "Number of samples to use for training (omit to use all samples). Use for testing purposes.",
+        "title": "Samples"
+      },
+      "stop_early": {
+        "default": false,
+        "description": "Exit before training starts. Can be used to avoid long training times when smoke-testing the pipeline.",
+        "title": "Stop Early",
+        "type": "boolean"
+      },
+      "inference_model_name": {
+        "default": "checkpoint_best_ema",
+        "description": "Checkpoint used for the post-training benchmark on the test split. Options: ['checkpoint_best_ema', 'checkpoint_best_regular', 'checkpoint_best_total']",
+        "title": "Inference Model Name",
+        "type": "string"
+      },
+      "inference_config": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/InferenceConfig"
+          },
+          {
+            "type": "null",
+            "title": "Select None"
+          }
+        ],
+        "default": null,
+        "description": "Inference configuration used for the post-training benchmark"
+      },
+      "aug_preset": {
+        "default": "dg_crosscity",
+        "description": "Cross-city DG augmentation preset. Options: ['default', 'dg_crosscity', 'dg_strong', 'dg_crosscity_v2']",
+        "title": "Aug Preset",
+        "type": "string"
+      },
+      "augmentation_backend": {
+        "default": "cpu",
+        "description": "Augmentation backend: 'cpu' (Albumentations, always available) or 'gpu'/'auto' (needs Kornia, NOT bundled). Default 'cpu'.",
+        "title": "Augmentation Backend",
+        "type": "string"
+      },
+      "num_workers": {
+        "default": 4,
+        "description": "Dataloader workers; raise to relieve the data-loading bottleneck on multi-vCPU nodes",
+        "title": "Num Workers",
+        "type": "integer"
+      },
+      "pseudo_label": {
+        "default": false,
+        "description": "Self-training: before training, run the model from --model-path as a teacher over the unlabeled TEST split, keep confident predictions as pseudo ground truth, and add those images to the training set. Fully automatic (no manual labels). The teacher inference uses --inference-config (resolution/grayworld/num_select apply). NOT used for any reported L0-L4 result; kept as an exploratory research path.",
+        "title": "Pseudo Label",
+        "type": "boolean"
+      },
+      "pseudo_thresholds": {
+        "default": "default=0.50,Person=0.65",
+        "description": "Per-class confidence thresholds for pseudo labels as 'default=0.5,Person=0.65,...'. Class names must match the dataset task classes; 'default' applies to unlisted classes.",
+        "title": "Pseudo Thresholds",
+        "type": "string"
+      },
+      "pseudo_min_boxes": {
+        "default": 2,
+        "description": "Skip pseudo images with fewer confident boxes than this. Sparse pseudo images are mostly teacher misses turned into false background supervision (recall poisoning).",
+        "title": "Pseudo Min Boxes",
+        "type": "integer"
+      },
+      "pseudo_max_images": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "title": "Select 'Integer'"
+          },
+          {
+            "type": "null",
+            "title": "Select None"
+          }
+        ],
+        "default": null,
+        "description": "Optional cap on pseudo-labeled images added to training (keeps epoch time bounded).",
+        "title": "Pseudo Max Images"
+      }
+    },
+    "title": "mainArgs",
+    "type": "object",
+    "positional_args": []
+  },
+  "case_conversion": "kebab",
+  "parameter_prefix": "--",
+  "nested_parameter_handling": "dot",
+  "assignment_separator": "space",
+  "bool_handling": "flag-negation",
+  "order": 0
+}

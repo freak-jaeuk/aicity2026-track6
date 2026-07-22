@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+*.pth
+*.zip
+*.tar.gz
+*.parquet
+.venv/
