@@ -15,6 +15,7 @@ updates — reached the highest aggregate AP among the configurations we tested
 | | |
 |---|---|
 | **Results** | [`RESULTS.md`](RESULTS.md) — every configuration and score |
+| **Run provenance** | [`RUN_MANIFEST.md`](RUN_MANIFEST.md) — verbatim platform command, settings and scores for every reported run |
 | **Full settings** | [`SUPPLEMENTARY.md`](SUPPLEMENTARY.md) — training, inference and packaging configuration |
 | **Upstream & modifications** | [`NOTICE.md`](NOTICE.md) |
 | **Licence** | MIT (see [`LICENSE`](LICENSE) and `NOTICE.md`) |
@@ -46,5 +47,8 @@ allowed pretrained RF-DETR weights. See `NOTICE.md`.
 
 All scores are **aggregate-only** over a hidden source/target mixture — no
 per-domain metric exists. Each configuration was submitted **once**, with no fixed
-random seed, so there are no error bars. L1 and L3 are not a matched control.
+random seed, so there are no error bars. L1 and L3 are **not** a matched control:
+besides the optimization differences, L3 was scored at confidence threshold 0.05
+while L0/L1/L2/L4 used 0.01, and L0 ran on the compiled path while L1–L4 ran
+eagerly. `RUN_MANIFEST.md` records both.
 `SUPPLEMENTARY.md` and the paper's Limitations section state these in full.

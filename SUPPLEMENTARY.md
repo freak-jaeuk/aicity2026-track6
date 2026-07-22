@@ -16,6 +16,11 @@ version; `Dockerfile` and `.python-version` define the runtime.
 
 ---
 
+> **Self-contained package.** This ZIP includes `RUN_MANIFEST.md` (per-run
+> provenance: verbatim commands, settings and scores), `RESULTS.md` (all reported
+> metrics) and `NOTICE.md` (upstream provenance and modifications). No external
+> link is required to audit any reported number.
+
 ## 1. Contents
 
 ```
@@ -145,9 +150,12 @@ interpolation, coordinate restoration, and box-clipping live in
 | **L3** | 1120px fine-tuning | see §3 |
 | **L4** | gray-world white balancing | per-image gray-world channel-mean normalisation (`--inference.grayworld`) |
 
-Common inference settings (`configs/l0..l4`): `num_select` 300, compile off,
-predictions rescaled back to the original image size, and boxes clipped to
-bounds. Evaluation uses COCO `maxDets = 100` per image (an evaluator setting,
+Common inference settings across all reported runs: an effective `num_select`
+of 300, predictions rescaled back to the original image size, and boxes clipped
+to bounds. Two settings were **not** common: L0 used the compiled
+native-resolution path while L1–L4 ran eagerly, and L0/L1/L2/L4 used confidence
+threshold `0.01` while L3 used `0.05` (see the run-record audit in §4).
+Evaluation separately uses COCO `maxDets = 100` per image (an evaluator setting,
 not a model inference option). L0 uses square 704 × 704 inference at the training grid (no
 positional-embedding interpolation); L1 and L4 use square 1120 × 1120 inference
 with positional-embedding interpolation; L2 uses a rectangular direct resize.
