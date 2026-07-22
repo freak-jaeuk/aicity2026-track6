@@ -87,12 +87,12 @@ for the pinned version (`uv.lock`).
 
 ## 3. L3 — 1120px warm-start fine-tuning — `configs/l3_finetune_1120.yaml`
 
-Warm-start from the base **704 EMA checkpoint** (the same checkpoint used for the
+Warm-start from the shared **704-trained checkpoint** (the same checkpoint used for the
 inference-only configurations L0–L2 and L4).
 
 | Item | Value |
 |---|---|
-| Warm-start checkpoint | 704 EMA checkpoint (`checkpoint_best_total` of the base run) |
+| Warm-start checkpoint | shared 704-trained checkpoint (`checkpoint_best_total` of the base run, i.e. the higher-scoring of EMA/regular; exported as `run1_best.zip`) |
 | Additional epochs | 6 |
 | Train resolution | 1120 × 1120 |
 | Optimizer | AdamW (re-initialised) |
@@ -116,7 +116,7 @@ L3 warmup value in the paper. To reproduce with an explicit value:
 
 ```
 python scripts/train.py \
-  --model-path ./pretrained_models/<base_704_ema>.zip \
+  --model-path ./pretrained_models/run1_best.zip \
   --epochs 6 --batch-size 1 --grad-accumulation-steps 16 \
   --learning-rate 1.5e-5 --lr-encoder 1e-4 --warmup-epochs 1.0 \
   --resolution 1120 --aug-preset dg_crosscity_v2 \
@@ -132,7 +132,7 @@ per-configuration settings; they are not directly consumed by `train.py` /
 `benchmark.py` (which take CLI arguments). Each section below and §7 gives the
 corresponding CLI command.
 
-All inference-only configurations use one shared 704 EMA checkpoint; only the
+All inference-only configurations use one shared 704-trained checkpoint; only the
 listed factor changes. Confidence threshold, top-k (`num_select`), resize /
 interpolation, coordinate restoration, and box-clipping live in
 `src/trainer_object_detection/wrapped_model.py` and are exposed as CLI flags.
@@ -162,33 +162,56 @@ rectangular-orientation test and is **not** an aspect-ratio-preserving or
 native-aspect input: orientation, aspect ratio, image shape, and pixel count all
 differ from the square 1120 setting at once.
 
-Per-configuration commands (`benchmark.py`; checkpoint attached as
-`<base_704_ema>.zip`):
+**Verbatim platform commands.** The following are the exact command strings
+recorded by the Hafnia platform for each reported run, recovered from the
+experiment records after the challenge closed. `run1_best.zip` is the shared
+704-trained checkpoint (`checkpoint_best_total`, i.e. the higher-scoring of the
+EMA and regular weights by source-validation AP) exported from the base training
+run. Flags not shown were left at their CLI defaults.
+
+| ID | Platform experiment | Date | Command |
+|---|---|---|---|
+| L0 | `run1 benchmark crosscity Scale` | 2026-07-03 | `python scripts/benchmark.py --model-path ./pretrained_models/run1_best.zip` |
+| L1 | `run1 probe res1120sq` | 2026-07-05 | `python scripts/benchmark.py --model-path ./pretrained_models/run1_best.zip --inference.resolution 1120 --inference.no-compile` |
+| L2 | `run1 probe res1280x736` | 2026-07-04 | `python scripts/benchmark.py --model-path ./pretrained_models/run1_best.zip --inference.resolution 1280x736 --inference.no-compile` |
+| L3 | `ft1120b v5 6ep autobench` | 2026-07-10 | `python scripts/train.py --model-path ./pretrained_models/run1_best.zip --epochs 6 --batch-size 1 --grad-accumulation-steps 16 --learning-rate 1.5e-5 --resolution 1120 --aug-preset dg_crosscity_v2 --inference-model-name checkpoint_best_total --inference-config.resolution 1120 --inference-config.no-compile --inference-config.threshold 0.05` |
+| L4 | `run1 gw1120 probe` | 2026-07-09 | `python scripts/benchmark.py --model-path ./pretrained_models/run1_best.zip --inference.resolution 1120 --inference.grayworld --inference.no-compile` |
+
+Base training run (produces `run1_best.zip`), `Large run1 80ep`, 2026-06-28:
 
 ```
-# L0 — base 704
-python scripts/benchmark.py --model-path <base_704_ema>.zip \
-    --inference.resolution 704 --inference.num-select 300 \
-    --inference.threshold 0.01 --inference.no-compile
-# L1 — frozen 1120
-python scripts/benchmark.py --model-path <base_704_ema>.zip \
-    --inference.resolution 1120 --inference.num-select 300 \
-    --inference.threshold 0.01 --inference.no-compile
-# L2 — rectangular 1280(H) x 736(W)
-python scripts/benchmark.py --model-path <base_704_ema>.zip \
-    --inference.resolution 1280x736 --inference.num-select 300 \
-    --inference.threshold 0.01 --inference.no-compile
-# L4 — gray-world at 1120
-python scripts/benchmark.py --model-path <base_704_ema>.zip \
-    --inference.resolution 1120 --inference.num-select 300 \
-    --inference.threshold 0.01 --inference.grayworld --inference.no-compile
+python scripts/train.py --model-path ./pretrained_models/RFDETRLarge.zip \
+    --epochs 80 --batch-size 1 --grad-accumulation-steps 16 \
+    --learning-rate 7e-5 --aug-preset dg_crosscity_v2 \
+    --inference-model-name checkpoint_best_total
 ```
 
-Effective values in all reported runs were `threshold = 0.01` (the CLI default)
-and `num_select = 300`. Note the CLI default for `--inference.num-select` is
-`None`, which falls back to the model's built-in 300 — the commands above pin
-both values explicitly for unambiguous reproduction. See
-`benchmark.schema.json` for all flags.
+**Three points where the run records differ from a naive reading of the above.**
+
+1. **Confidence threshold was *not* uniform.** L0, L1, L2 and L4 used the CLI
+   default `threshold = 0.01`. The L3 run's built-in evaluation pass was launched
+   with an explicit `--inference-config.threshold 0.05`. Because COCO AP is
+   rank-based under a per-image detection cap, the higher threshold discards
+   low-confidence detections that could still have contributed to the
+   precision–recall tail, so the difference is expected to work *against* L3. The
+   magnitude is unmeasured: the evaluation server is closed and L3 cannot be
+   re-scored at `0.01`. The paper reports the L1–L3 comparison as confounded by
+   this in addition to the optimization differences.
+2. **`num_select` was never passed explicitly.** The CLI default is `None`, which
+   falls back to the model's built-in `300`, so the effective value is `300` in
+   every reported run — but no reported command pins it. (A separate,
+   *unreported* experiment, `run1 ns600 hflipTTA`, did use
+   `--inference.num-select 600 --tta-hflip`; it is not part of L0–L4.)
+3. **Compiled inference.** L0 ran with the compiled path enabled (the CLI
+   default), because it evaluates at the checkpoint's native square resolution.
+   L1, L2 and L4 pass `--inference.no-compile`, which a resolution override
+   requires: `optimize_for_inference()` pins the compiled graph to the
+   training-time square resolution, so any override must run eagerly. This is a
+   consequence of the override, not an independently chosen setting.
+
+Encoder learning rate (`1e-4`) and the cosine minimum-LR factor were left at the
+`train.py` defaults in every run; `--learning-rate` sets the decoder LR only. See
+`benchmark.schema.json` and `train.schema.json` for all flags.
 
 **Confidence threshold (two distinct stages).**
 1. *Model inference threshold* = `0.01` (`benchmark.schema.json` default) — a
@@ -255,8 +278,8 @@ python scripts/benchmark.py --help
 
 ## 7. Reproduction run order
 
-1. **Base training** — `python scripts/train.py --model-path <rf-detr-large-2026.zip> --epochs 80 --resolution 704 --learning-rate 7e-5 --lr-encoder 1e-4 --warmup-epochs 1.0 --aug-preset dg_crosscity_v2 --batch-size 1 --grad-accumulation-steps 16` (inside Hafnia, `eccv-cross-city` dataset). Produces the 704 EMA checkpoint.
-2. **L3 fine-tuning** — §3 launch command, warm-starting from the base 704 EMA checkpoint.
+1. **Base training** — `python scripts/train.py --model-path <rf-detr-large-2026.zip> --epochs 80 --resolution 704 --learning-rate 7e-5 --lr-encoder 1e-4 --warmup-epochs 1.0 --aug-preset dg_crosscity_v2 --batch-size 1 --grad-accumulation-steps 16` (inside Hafnia, `eccv-cross-city` dataset). Produces the shared 704-trained checkpoint (`checkpoint_best_total`, exported as `run1_best.zip`). The actual platform run passed neither `--resolution` (704 is the model default) nor `--lr-encoder`/`--warmup-epochs` (defaults); see the verbatim command in §4.
+2. **L3 fine-tuning** — §3 launch command, warm-starting from the shared 704-trained checkpoint.
 3. **Inference (L0–L2, L4)** — attach the shared checkpoint and run `python scripts/benchmark.py` with the per-config flags (§4 / `configs/`).
 4. **Download** the experiment `/model` output and extract the predictions; package with `package_predictions.py`; **submit** the bundle to the AI City Challenge evaluation server.
 

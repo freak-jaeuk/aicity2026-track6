@@ -1,4 +1,4 @@
-# Base training configuration (produces the 704 EMA checkpoint)
+# Base training configuration (produces the shared 704 checkpoint, run1_best.zip)
 name: base_704
 mode: train
 model: RF-DETR-Large (rfdetr 1.8.1)

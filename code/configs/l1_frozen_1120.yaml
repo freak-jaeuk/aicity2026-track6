@@ -2,13 +2,13 @@
 name: l1_frozen_1120
 mode: inference
 training_free: true          # no parameter update
-checkpoint: 704 EMA checkpoint (shared)
+checkpoint: shared 704-trained checkpoint (checkpoint_best_total = higher-scoring of EMA/regular; exported as run1_best.zip)
 inference:
   resolution: 1120           # square, direct resize; PE interpolated
-  num_select: 300
+  num_select: 300  # effective value; CLI default None falls back to the model's built-in 300
   max_dets: 100
   resize: square direct resize (bilinear); positional embeddings interpolated for larger grids
   coordinate_restoration: predictions rescaled from network input size back to original image size
   box_clipping: boxes clipped to image bounds
-  compile: false
+  compile: false   # forced: a resolution override must run eagerly (optimize_for_inference pins the compiled graph)
   confidence_threshold: 0.01   # code default (benchmark.schema.json); low threshold for COCO-AP evaluation

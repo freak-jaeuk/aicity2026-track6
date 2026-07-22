@@ -1,12 +1,12 @@
 # L2 - rectangular inference (negative result)
 name: l2_rect_1280x736
 mode: inference
-checkpoint: 704 EMA checkpoint (shared)
+checkpoint: shared 704-trained checkpoint (checkpoint_best_total = higher-scoring of EMA/regular; exported as run1_best.zip)
 inference:
   resolution: 1280x736       # parsed by the CLI in HxW order -> height 1280, width 736
   resolution_order: HxW      # square resolutions are a single integer; rectangular ones are HxW
   actual_input_shape: 1280(H) x 736(W)
-  num_select: 300
+  num_select: 300  # effective value; CLI default None falls back to the model's built-in 300
   max_dets: 100
   resize: rectangular direct resize to 1280(H) x 736(W) (bilinear); PE interpolated
   note: >
@@ -15,5 +15,5 @@ inference:
     be read as aspect-ratio-preserving or native-aspect inference.
   coordinate_restoration: predictions rescaled from network input size back to original image size
   box_clipping: boxes clipped to image bounds
-  compile: false
+  compile: false   # forced: a resolution override must run eagerly (optimize_for_inference pins the compiled graph)
   confidence_threshold: 0.01   # code default (benchmark.schema.json); low threshold for COCO-AP evaluation

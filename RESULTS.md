@@ -10,13 +10,13 @@ was set and no error bars are available.
 
 | ID | Checkpoint | Input | Parameter update | AP |
 |---|---|---|---|---:|
-| L0 | 704 EMA | 704 × 704 | No | 0.3272 |
-| **L1** | 704 EMA | **1120 × 1120** | No | **0.3654** |
-| L2 | 704 EMA | 1280(H) × 736(W), rectangular | No | 0.3057 |
-| L3 | 704 EMA warm-start | 1120 × 1120, fine-tuned | **Yes** | 0.3470 |
-| L4 | 704 EMA | 1120 × 1120 + gray-world | No | 0.3647 |
+| L0 | shared 704 ckpt | 704 × 704 | No | 0.3272 |
+| **L1** | shared 704 ckpt | **1120 × 1120** | No | **0.3654** |
+| L2 | shared 704 ckpt | 1280(H) × 736(W), rectangular | No | 0.3057 |
+| L3 | shared 704 ckpt, warm-start | 1120 × 1120, fine-tuned | **Yes** | 0.3470 |
+| L4 | shared 704 ckpt | 1120 × 1120 + gray-world | No | 0.3647 |
 
-L0, L1, L2 and L4 share the **same** 704-trained EMA checkpoint and differ only in
+L0, L1, L2 and L4 share the **same** 704-trained checkpoint (`checkpoint_best_total`, the higher-scoring of the EMA and regular weights) and differ only in
 inference-time processing. L3 warm-starts from that checkpoint and updates the
 model parameters.
 
@@ -61,7 +61,13 @@ recovered or recomputed.
 - No target-city-specific improvement is established; every statement is
   benchmark-level, because the server metric is aggregate-only.
 - L1 vs L3 is **not** a matched control: they differ in optimizer updates, training
-  duration, scheduler state and checkpoint selection.
+  duration, scheduler state, checkpoint selection **and the evaluation confidence
+  threshold**. L0/L1/L2/L4 were scored at the CLI default `0.01`; the L3 run's
+  built-in evaluation pass was launched with `--inference-config.threshold 0.05`.
+  Because COCO AP is rank-based under a per-image detection cap, the higher
+  threshold is expected to work *against* L3. The magnitude is unmeasured — the
+  evaluation server is closed, so L3 cannot be re-scored at `0.01`. Verbatim
+  platform commands for all five runs are in `SUPPLEMENTARY.md`.
 - Single-model, single-benchmark, single-run results. Do not generalize to other
   detectors or domains.
 

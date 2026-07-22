@@ -1,7 +1,7 @@
 # L3 - 1120px warm-start fine-tuning
 name: l3_finetune_1120
 mode: train
-warm_start_checkpoint: 704 EMA checkpoint (shared; checkpoint_best_total of base run)
+warm_start_checkpoint: shared 704-trained checkpoint (checkpoint_best_total of base run; run1_best.zip)
 train:
   resolution: 1120
   epochs: 6
@@ -25,3 +25,5 @@ train:
   augmentation: dg_crosscity_v2
   evaluated_checkpoint: higher-scoring of EMA / regular by source-validation AP (checkpoint_best_total)
   eval_resolution: 1120
+  eval_confidence_threshold: 0.05   # NOT the 0.01 used by L0/L1/L2/L4 - see SUPPLEMENTARY.md
+  eval_compile: false
