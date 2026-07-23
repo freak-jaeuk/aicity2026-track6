@@ -51,8 +51,11 @@ recovered or recomputed.
 - The gain is largest **relatively** on small objects (AP<sub>S</sub> +27.2 %) and
   largest **absolutely** on medium objects (AP<sub>M</sub> +0.0396).
 - L3 (the one fine-tuning recipe evaluated) raised in-domain validation AP
-  (0.767 → 0.789) but reached a lower aggregate benchmark AP than L1, together
-  with a substantial recall drop (AR@100 0.6520 → 0.5320).
+  (0.767 → 0.789) but reached a lower archived aggregate AP than L1. Its reported
+  recall was also lower (AR@100 0.6520 → 0.5320), but the L3 evaluation used a
+  higher confidence threshold (0.05 vs 0.01), so the recall difference cannot be
+  attributed to fine-tuning. L3 nonetheless attains the highest small-object AP
+  of any archived configuration (AP_S 0.0678).
 - L2's configuration string `1280x736` is parsed by the benchmark CLI in **H × W**
   order, so the actual model input was 1280 high × 736 wide. Orientation, aspect
   ratio, image shape and pixel count all differ from the square 1120 setting at
@@ -72,17 +75,17 @@ recovered or recomputed.
   platform commands for all five runs are in `SUPPLEMENTARY.md`.
 - Single-model, single-benchmark, single-run results. Do not generalize to other
   detectors or domains.
-- **These are not competitive results.** The best submission (L1, 0.3654) placed
-  outside the top ten of the Track 6 public leaderboard; the leading entries
-  scored 0.4753 and 0.4663. The gap to the top of the board (~0.11 AP) is larger
-  than every effect reported here.
+- The best submission (L1, 0.3654) was not among the leading leaderboard entries,
+  so these records support an audited empirical analysis rather than a
+  state-of-the-art challenge system.
 - **The best score was selected on the hidden server** after comparing several
   submissions, so it is an optimistically biased estimate rather than an unbiased
   measurement (winner's curse). With `n = 1` and no variance estimate, the 0.0007
   AP separating L1 from L4 should be read as an undetermined ordering.
-- **L2 was a configuration error, not a designed negative result.** It was meant
-  to be a landscape, roughly native-aspect input; the CLI's H x W parsing turned
-  `1280x736` into a portrait 1280-high x 736-wide input instead.
+- **L2 used an unintended portrait orientation** and should be interpreted as an
+  audited configuration outcome, not as evidence about the intended landscape or
+  native-aspect setting: it was meant to be a landscape input, but the CLI's
+  H x W parsing turned `1280x736` into a portrait 1280-high x 736-wide input.
 - **No claim that 1120 is optimal.** It is the one square high-resolution setting
   we could evaluate; no sweep was run and intermediate settings were never tried.
 
