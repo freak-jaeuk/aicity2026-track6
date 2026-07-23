@@ -209,13 +209,12 @@ The wrapped [`rfdetr`](https://github.com/roboflow/rf-detr) package and its Apac
 If you use this trainer package for research or publications, please cite the RF-DETR paper:
 
 ```bibtex
-@misc{rf-detr,
+@inproceedings{rf-detr,
     title={RF-DETR: Neural Architecture Search for Real-Time Detection Transformers},
     author={Isaac Robinson and Peter Robicheaux and Matvei Popov and Deva Ramanan and Neehar Peri},
-    year={2025},
-    eprint={2511.09554},
-    archivePrefix={arXiv},
-    primaryClass={cs.CV},
+    booktitle={International Conference on Learning Representations (ICLR)},
+    year={2026},
+    note={arXiv:2511.09554},
     url={https://arxiv.org/abs/2511.09554},
 }
 ```

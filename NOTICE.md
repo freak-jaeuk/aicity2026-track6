@@ -37,8 +37,10 @@ Relative to the upstream template:
 - `configs/` — added; these YAML files record the exact settings of each reported
   configuration and are documentation, not code the scripts read.
 - `extra_experiments/` — working-repository scripts kept for completeness.
-- Documentation (`README.md`, `SUPPLEMENTARY.md`, `RESULTS.md`, this file) added
-  or rewritten.
+- Documentation (`README.md`, `SUPPLEMENTARY.md`, `RESULTS.md`, `RUN_MANIFEST.md`,
+  this file) added or rewritten. The RF-DETR citation in `code/README.md` was
+  updated from the upstream pre-acceptance `@misc` arXiv form to the accepted
+  ICLR 2026 venue, so it matches the citation in our paper.
 
 ## Not redistributable, therefore absent
 

@@ -72,6 +72,19 @@ recovered or recomputed.
   platform commands for all five runs are in `SUPPLEMENTARY.md`.
 - Single-model, single-benchmark, single-run results. Do not generalize to other
   detectors or domains.
+- **These are not competitive results.** The best submission (L1, 0.3654) placed
+  outside the top ten of the Track 6 public leaderboard; the leading entries
+  scored 0.4753 and 0.4663. The gap to the top of the board (~0.11 AP) is larger
+  than every effect reported here.
+- **The best score was selected on the hidden server** after comparing several
+  submissions, so it is an optimistically biased estimate rather than an unbiased
+  measurement (winner's curse). With `n = 1` and no variance estimate, the 0.0007
+  AP separating L1 from L4 should be read as an undetermined ordering.
+- **L2 was a configuration error, not a designed negative result.** It was meant
+  to be a landscape, roughly native-aspect input; the CLI's H x W parsing turned
+  `1280x736` into a portrait 1280-high x 736-wide input instead.
+- **No claim that 1120 is optimal.** It is the one square high-resolution setting
+  we could evaluate; no sweep was run and intermediate settings were never tried.
 
 See `SUPPLEMENTARY.md` for every configuration setting and the paper for the full
 discussion and limitations.
