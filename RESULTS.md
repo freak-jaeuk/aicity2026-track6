@@ -51,7 +51,9 @@ recovered or recomputed.
 - The gain is largest **relatively** on small objects (AP<sub>S</sub> +27.2 %) and
   largest **absolutely** on medium objects (AP<sub>M</sub> +0.0396).
 - L3 (the one fine-tuning recipe evaluated) raised in-domain validation AP
-  (0.767 → 0.789) but reached a lower archived aggregate AP than L1. Its reported
+  (0.767 → 0.789) but reached a lower archived aggregate AP than L1 — a caution
+  that in-domain validation is an unreliable model-selection signal under
+  aggregate-only cross-city feedback. Its reported
   recall was also lower (AR@100 0.6520 → 0.5320), but the L3 evaluation used a
   higher confidence threshold (0.05 vs 0.01), so the recall difference cannot be
   attributed to fine-tuning. L3 nonetheless attains the highest small-object AP
