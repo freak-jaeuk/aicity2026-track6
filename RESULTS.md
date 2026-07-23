@@ -16,9 +16,11 @@ was set and no error bars are available.
 | L3 | shared 704 ckpt, warm-start | 1120 × 1120, fine-tuned | **Yes** | 0.3470 |
 | L4 | shared 704 ckpt | 1120 × 1120 + gray-world | No | 0.3647 |
 
-L0, L1, L2 and L4 share the **same** 704-trained checkpoint (`checkpoint_best_total`, the higher-scoring of the EMA and regular weights) and differ only in
-inference-time processing. L3 warm-starts from that checkpoint and updates the
-model parameters.
+L0, L1, L2 and L4 use the same 704-trained checkpoint (`checkpoint_best_total`,
+the higher-scoring of the EMA and regular weights) and perform no parameter
+updates. Their input processing and execution modes are listed in
+`RUN_MANIFEST.md`. L3 warm-starts from that checkpoint and updates the model
+parameters.
 
 ## Precision breakdown
 

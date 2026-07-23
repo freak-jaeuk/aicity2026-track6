@@ -137,9 +137,10 @@ per-configuration settings; they are not directly consumed by `train.py` /
 `benchmark.py` (which take CLI arguments). Each section below and §7 gives the
 corresponding CLI command.
 
-All inference-only configurations use one shared 704-trained checkpoint; only the
-listed factor changes. Confidence threshold, top-k (`num_select`), resize /
-interpolation, coordinate restoration, and box-clipping live in
+All inference-only configurations use the same 704-trained checkpoint and perform
+no parameter updates. Their input processing **and execution modes** differ as
+documented below and in `RUN_MANIFEST.md`. Confidence threshold, top-k
+(`num_select`), resize / interpolation, coordinate restoration, and box-clipping live in
 `src/trainer_object_detection/wrapped_model.py` and are exposed as CLI flags.
 
 | Config | Change | Key settings |
